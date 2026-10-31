@@ -104,7 +104,7 @@ public class FileApiInfoDAO extends RescueAPIBase implements APIInfoInterface{
      */
     void save() {
         try {
-            getObjectMapper().writeValue(jsonFile, data);
+            utils.AtomicJsonFile.write(getObjectMapper(), jsonFile, data);
         } catch (Exception ex) {
             System.out.print("Failed saving file [" + jsonFile.getName() + "]: " + ex.getMessage());
             throw new RuntimeException(ex);

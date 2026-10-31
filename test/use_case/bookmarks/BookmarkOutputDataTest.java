@@ -33,9 +33,9 @@ class BookmarkOutputDataTest {
     @BeforeEach
     void setup() {
         // Create sample Bookmark objects
-        bookmark1 = new Bookmark(13, LocalDateTime.of(2021, 8, 13, 16, 30));
-        bookmark2 = new Bookmark(45, LocalDateTime.of(2022, 3, 7, 10, 15));
-        removedBookmark = new Bookmark(167, LocalDateTime.of(2023, 12, 30, 8, 46));
+        bookmark1 = new Bookmark("test-user", 13, LocalDateTime.of(2021, 8, 13, 16, 30));
+        bookmark2 = new Bookmark("test-user", 45, LocalDateTime.of(2022, 3, 7, 10, 15));
+        removedBookmark = new Bookmark("test-user", 167, LocalDateTime.of(2023, 12, 30, 8, 46));
 
         // Initialize the list of all bookmarks
         allBookmarks = new ArrayList<>();

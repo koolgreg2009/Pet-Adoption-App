@@ -84,6 +84,6 @@ class GetBreedInteractorTest {
 
         String errorMessage = argumentCaptor.getValue();
 
-        assertEquals("Information on UnknownBreed could not be found.", errorMessage);
+        assertEquals("Information on UnknownBreed could not be loaded. Check your connection and THECATAPI_API_KEY, or try another breed.", errorMessage);
     }
 }

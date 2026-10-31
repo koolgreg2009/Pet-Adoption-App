@@ -45,12 +45,15 @@ public class Adopt implements AdoptInputBoundary {
     @Override
     public void execute(AdoptInputData adoptInputData) {
         Pet pet =  petDAO.get(adoptInputData.getPetID());
+        if (pet == null || !pet.isAvailable()) {
+            userPresenter.prepareFailure("This pet is no longer available for adoption.");
+            return;
+        }
         pet.markUnavailable();
         List<String> users = userDAO.removePetFromAllUserBookmarks(pet.getPetID());
         petDAO.save(pet);
         for (String u : users) {
             String message = pet.getName() + " has found a home.";
-            userDAO.get(u).addNotif(message);
             userDAO.addNotification(u, message);
         }
         AdoptOutputData outputData = new AdoptOutputData(pet.getOwner(), pet.getEmail(), pet.getPhoneNum(),

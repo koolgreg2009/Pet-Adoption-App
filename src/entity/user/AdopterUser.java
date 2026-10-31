@@ -49,8 +49,8 @@ public class AdopterUser extends CommonUser{
 			@JsonProperty("bookmarks") ArrayList<Bookmark> bookmarks,
 			@JsonProperty("preferences") UserPreference preferences) {
 		super(username, password, name, email, phone);
-		this.bookmarks = bookmarks;
-		this.preferences = preferences;
+		this.bookmarks = bookmarks == null ? new ArrayList<>() : bookmarks;
+		this.preferences = preferences == null ? new UserPreference() : preferences;
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class AdopterUser extends CommonUser{
 	 * @param preferences the preferences of the adopter user
 	 */
 	public void setPreferences(UserPreference preferences) {
-		this.preferences = preferences;
+		this.preferences = preferences == null ? new UserPreference() : preferences;
 	}
 
 	/**

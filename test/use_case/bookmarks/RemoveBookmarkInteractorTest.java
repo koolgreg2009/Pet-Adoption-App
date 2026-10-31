@@ -45,7 +45,7 @@ public class RemoveBookmarkInteractorTest {
         username = "Test User";
         time = LocalDateTime.of(2022,7,5,9,38);
         allBookmarks = new ArrayList<>();
-        allBookmarks.add(new Bookmark(petID, time));
+        allBookmarks.add(new Bookmark("test-user", petID, time));
 
         userDAO = mock(UserDAOInterface.class);
         user = mock(AdopterUser.class);
@@ -69,7 +69,7 @@ public class RemoveBookmarkInteractorTest {
         removeBookmarkInteractor.execute(new BookmarkInputData(username, petID));
 
         verify(user,times(2)).getBookmarks();
-        verify(userDAO).save(user);
+        verify(userDAO).removeBookmark(user.getUsername(), petID);
         verify(removeOutputBoundary).prepareSuccessView(any(BookmarkOutputData.class));
         ArgumentCaptor<Bookmark> bookmarkCaptor = ArgumentCaptor.forClass(Bookmark.class);
         verify(user).removeBookmark(bookmarkCaptor.capture());

@@ -196,6 +196,7 @@ public class LoggedInView extends JPanel implements PetActionView, ActionListene
             username.setText(state.getUsername());
             List<PetDTO> pets = state.getPets();
             petListingPanel.removeAll();
+            if (pets.isEmpty()) petListingPanel.add(new JLabel("No available pets match your preferences. Clear your filters, or import listings if this is a new installation."));
             for (PetDTO pet : pets) {
                 petListingPanel.add(new PetListingPanel(this, pet, true));
             }

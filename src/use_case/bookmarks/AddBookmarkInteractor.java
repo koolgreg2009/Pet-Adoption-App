@@ -31,10 +31,10 @@ public class AddBookmarkInteractor implements BookmarkInputBoundary{
      * @param inputData the input data containing the username and pet ID.
      */
     public void execute(BookmarkInputData inputData) {
-        AdopterUser user = ((AdopterUser) fileUserDAO.get(inputData.getUsername()));
-        if (user.hasBookmark(inputData.getPetID())) {
+        if (fileUserDAO.userHasBookmark(inputData.getUsername(), inputData.getPetID())) {
             this.bookmarkPresenter.prepareErrorView("Bookmark already exists");
         } else{
+            AdopterUser user = ((AdopterUser) fileUserDAO.get(inputData.getUsername()));
             LocalDateTime now = LocalDateTime.now();
             Bookmark bookmark = new Bookmark(inputData.getUsername(), inputData.getPetID(), now);
             user.addBookmark(bookmark); // this should call userdao

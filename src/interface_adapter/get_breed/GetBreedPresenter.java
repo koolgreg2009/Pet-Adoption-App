@@ -28,6 +28,10 @@ public class GetBreedPresenter implements GetBreedOutputBoundary {
      * @param getBreedOutputData the data containing breed information to be displayed.
      */
     public void prepareGetBreedView(GetBreedOutputData getBreedOutputData){
+        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+            javax.swing.SwingUtilities.invokeLater(() -> prepareGetBreedView(getBreedOutputData));
+            return;
+        }
         PetBioState state = petBioViewModel.getState();
         state.setNotification("Breed Name: " + getBreedOutputData.getBreedName() + "\n" +
                 "Description: " + getBreedOutputData.getDescription() + "\n" +
@@ -48,6 +52,10 @@ public class GetBreedPresenter implements GetBreedOutputBoundary {
      * @param errorMessage the error message to be displayed in the view.
      */
     public void prepareFailView(String errorMessage){
+        if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+            javax.swing.SwingUtilities.invokeLater(() -> prepareFailView(errorMessage));
+            return;
+        }
         PetBioState state = petBioViewModel.getState();
         state.setNotification(errorMessage);
         petBioViewModel.fireNotificationChanged();

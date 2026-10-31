@@ -23,7 +23,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
 
     /**
      * Constructs a {@code FilePetDAO} instance and initializes it with data from the specified JSON file.
-     * If the JSON file is empty, it retrieves pet data from the API and saves it.
+     * An empty file starts an offline store. Call fetchAndStorePets explicitly to import listings.
      *
      * @param jsonPath the path to the JSON file that will be used to store the data.
      * @throws IOException if an I/O error occurs while reading the JSON file or interacting with the API.
@@ -32,7 +32,6 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
         super();
         this.jsonFile = new File(jsonPath);
         if (jsonFile.length() == 0) {
-            fetchAndStorePets();
             save();
         } else {
             TypeReference<HashMap<String, Pet>> typeRef = new TypeReference<HashMap<String, Pet>>() {};
@@ -69,7 +68,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
      */
     private void save(){
         try {
-            objectMapper.writeValue(jsonFile, pets);
+            utils.AtomicJsonFile.write(objectMapper, jsonFile, pets);
         } catch (Exception ex) {
             System.out.print("Failed saving file [" + jsonFile.getName() + "]: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -102,7 +101,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
      * @param userPreference the user preferences to match against.
      * @return {@code true} if the pet matches the user preferences, {@code false} otherwise.
      */
-    private boolean matchesPreference(Pet pet, UserPreference userPreference) {
+    static boolean matchesPreference(Pet pet, UserPreference userPreference) {
         return isMatching(userPreference.getSpecies(), pet.getSpecies()) &&
                 isMatching(userPreference.getBreeds(), pet.getBreed()) &&
                 isInRange(userPreference.getMinAge(), userPreference.getMaxAge(), pet.getPetAge()) &&
@@ -119,7 +118,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
      * @param attribute the attribute to check.
      * @return {@code true} if the attribute matches the preference, {@code false} otherwise.
      */
-    private boolean isMatching(String preference, String attribute) {
+    private static boolean isMatching(String preference, String attribute) {
         return preference == null || preference.isEmpty() || Objects.equals(preference, attribute);
     }
 
@@ -130,7 +129,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
      * @param attribute the attribute to check.
      * @return {@code true} if the attribute matches one of the preferences, {@code false} otherwise.
      */
-    private boolean isMatching(List<String> preferences, String attribute) {
+    private static boolean isMatching(List<String> preferences, String attribute) {
         return preferences == null || preferences.isEmpty() || preferences.contains(attribute);
     }
 
@@ -142,7 +141,7 @@ public class FilePetDAO extends RescueAPIPetGet implements PetDAOInterface {
      * @param value the value to check.
      * @return {@code true} if the value is within the range, {@code false} otherwise.
      */
-    private boolean isInRange(int min, int max, int value) {
+    private static boolean isInRange(int min, int max, int value) {
         return (min == 0 || value >= min) && (max == 0 || value <= max);
     }
 

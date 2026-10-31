@@ -55,15 +55,17 @@ public class RemoveBookmarkInteractor implements BookmarkInputBoundary {
         List<Pet> pets = new ArrayList<>();
         List<LocalDateTime> times = new ArrayList<>();
         for(Bookmark bookmark: user.getBookmarks()){
-            pets.add(filePetDAO.get(bookmark.getPetID()));
-            times.add(bookmark.getBookmarkedDate());
+            Pet pet = filePetDAO.get(bookmark.getPetID());
+            if (pet != null && pet.isAvailable()) {
+                pets.add(pet);
+                times.add(bookmark.getBookmarkedDate());
+            }
         }
         List<PetDTO> petDtoList = pets.stream()
                 .map(pet -> new PetDTO(pet.getPetID(), pet.getName(), pet.getBreed(), pet.getGender(),
                         pet.getSpecies(), pet.getPetAge(), pet.getBio(), pet.getOwner(), pet.getEmail(),
                         pet.getPhoneNum(), pet.getActivityLevel(), pet.getLocation(), pet.getImgUrl()))
                 .collect(Collectors.toList());
-        petDtoList.sort((p1, p2) -> p1.getPetID() - p2.getPetID());
         List<BookmarkDTO> bookmarkDTO = new ArrayList<>();
         for(int i=0; i<pets.size(); i++){
             bookmarkDTO.add(new BookmarkDTO(petDtoList.get(i), times.get(i)));

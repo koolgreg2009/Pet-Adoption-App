@@ -16,11 +16,11 @@ import java.util.HashMap;
  */
 public class CatBreedDAO implements CatDAOInterface {
     private OkHttpClient client;
-    private static final String API_KEY = "live_DUQgLUE2gN2cW7JxlvdupPwS1n2CyUFee5yfvYXnyUps7D6CEF9yjk6bCHdwqGiY";
+    private static final String API_KEY = System.getenv("THECATAPI_API_KEY");
     private static final String API_URL = "https://api.thecatapi.com/v1/breeds/search";
 
     public CatBreedDAO(){
-        this.client = new OkHttpClient();
+        this.client = new OkHttpClient.Builder().callTimeout(15, java.util.concurrent.TimeUnit.SECONDS).build();
     }
     public CatBreedDAO(OkHttpClient client) {
         this.client = client;
@@ -34,21 +34,20 @@ public class CatBreedDAO implements CatDAOInterface {
      */
     @Override
     public HashMap<String, Object> getBreedInformation(String breedName) {
-        // String url = System.getenv("API_URL") + "?q=" + breedName + "&attach_image=1";
-        String url = API_URL + "?q=" + breedName + "&attach_image=1";
-        Request request = new Request.Builder()
-                .url(url)
-//                .addHeader("x-api-key", System.getenv("API_KEY"))
-                .addHeader("x-api-key", API_KEY)
-                .build();
+        if (breedName == null || breedName.isBlank()) return null;
+        okhttp3.HttpUrl url = okhttp3.HttpUrl.parse(API_URL).newBuilder()
+                .addQueryParameter("q", breedName).addQueryParameter("attach_image", "1").build();
+        Request.Builder builder = new Request.Builder().url(url);
+        if (API_KEY != null && !API_KEY.isBlank()) builder.addHeader("x-api-key", API_KEY);
+        Request request = builder.build();
 
         try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+            if (!response.isSuccessful() || response.body() == null) return null;
 
             String responseBody = response.body().string();
             return parseJsonResponseToMap(responseBody);
 
-        } catch (IOException e) {
+        } catch (IOException | org.json.JSONException e) {
             return null;
         }
 
@@ -73,7 +72,7 @@ public class CatBreedDAO implements CatDAOInterface {
         breedInfo.put("child_friendly", breed.getInt("child_friendly"));
         breedInfo.put("dog_friendly", breed.getInt("dog_friendly"));
         breedInfo.put("energy_level", breed.getInt("energy_level"));
-        breedInfo.put("image_url", breed.getJSONObject("image").getString("url"));
+        breedInfo.put("image_url", breed.optJSONObject("image") == null ? "" : breed.getJSONObject("image").optString("url", ""));
 
         return breedInfo;
     }

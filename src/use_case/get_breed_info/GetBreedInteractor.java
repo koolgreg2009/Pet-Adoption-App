@@ -46,7 +46,7 @@ public class GetBreedInteractor implements GetBreedInputBoundary {
             GetBreedOutputData outputData = new GetBreedOutputData(breedName, description, adaptability, affection_level, child_friendly, dog_friendly, energy_level, img_url);
             this.getBreedPresenter.prepareGetBreedView(outputData);
         }else{
-            this.getBreedPresenter.prepareFailView("Information on " + breed+" could not be found.");
+            this.getBreedPresenter.prepareFailView("Information on " + breed+" could not be loaded. Check your connection and THECATAPI_API_KEY, or try another breed.");
         }
     }
 }

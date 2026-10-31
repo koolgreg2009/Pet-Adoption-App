@@ -26,6 +26,15 @@ public class GetBreedController {
      * @param breedName the name of the breed to retrieve information for.
      */
     public void execute(String breedName){
-        this.getBreedInteractor.execute(new GetBreedInputData(breedName));
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            new javax.swing.SwingWorker<Void, Void>() {
+                @Override protected Void doInBackground() {
+                    getBreedInteractor.execute(new GetBreedInputData(breedName));
+                    return null;
+                }
+            }.execute();
+        } else {
+            this.getBreedInteractor.execute(new GetBreedInputData(breedName));
+        }
     }
 }

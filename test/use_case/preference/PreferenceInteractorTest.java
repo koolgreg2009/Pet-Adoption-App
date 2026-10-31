@@ -75,8 +75,7 @@ public class PreferenceInteractorTest {
         interactor.execute(preferenceData);
 
         // Assert
-        verify(mockUser).setPreferences(preferenceData.getUserPreference());
-        verify(userDAO).save(mockUser);
+        verify(userDAO).updatePreferences(preferenceData.getUsername(), preferenceData.getUserPreference());
         verify(presenter).prepareSuccessView();
     }
 
@@ -84,7 +83,7 @@ public class PreferenceInteractorTest {
         // Create and return a PreferenceData instance suitable for testing
         List<String> breeds = List.of("Breed1", "Breed2");
         String location = "Some Location";
-        UserPreference userPreference = new UserPreference("Dog", breeds, 1, 10, "Medium", location, "Male");
+        UserPreference userPreference = new UserPreference("user1", "Dog", breeds, 1, 10, "Medium", location, "Male");
         PreferenceKeys keys = new PreferenceKeys("breedKey", "locationKey");
         return new PreferenceData("testUser", userPreference, keys);
     }
