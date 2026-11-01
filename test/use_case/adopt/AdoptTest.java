@@ -57,8 +57,7 @@ class AdoptTest {
         AdopterUser user1 = Mockito.mock(AdopterUser.class);
         AdopterUser user2 = Mockito.mock(AdopterUser.class);
 
-        when(userDAO.get("user1")).thenReturn(user1);
-        when(userDAO.get("user2")).thenReturn(user2);
+
 
         List<String> users = Arrays.asList("user1", "user2");
         when(userDAO.removePetFromAllUserBookmarks(1)).thenReturn(users);
@@ -69,8 +68,8 @@ class AdoptTest {
         verify(pet).markUnavailable();
         verify(petDAO).save(pet);
 
-        verify(user1).addNotif("Fluffy has found a home.");
-        verify(user2).addNotif("Fluffy has found a home.");
+        verify(userDAO).addNotification("user1", "Fluffy has found a home.");
+        verify(userDAO).addNotification("user2", "Fluffy has found a home.");
 
         ArgumentCaptor<AdoptOutputData> argumentCaptor = ArgumentCaptor.forClass(AdoptOutputData.class);
         verify(presenter).prepareAdopt(argumentCaptor.capture());

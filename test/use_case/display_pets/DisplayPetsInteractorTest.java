@@ -54,7 +54,7 @@ public class DisplayPetsInteractorTest {
     public void testExecute() {
         // Setup
         String userName = "testUser";
-        UserPreference userPreference = new UserPreference("Cat", List.of("Breed1", "Breed2"), 1, 5, "Active", "Location", "Male");
+        UserPreference userPreference = new UserPreference("user1", "Cat", List.of("Breed1", "Breed2"), 1, 5, "Active", "Location", "Male");
         AdopterUser user = mock(AdopterUser.class);
         when(user.getUsername()).thenReturn(userName);
         when(user.getPreferences()).thenReturn(userPreference);
@@ -65,7 +65,7 @@ public class DisplayPetsInteractorTest {
         );
 
         when(userDAO.get(userName)).thenReturn(user);
-        when(petDAO.getPreferencePets(userPreference)).thenReturn(new ArrayList<>(pets));
+        when(userDAO.getPreferencePets(userName)).thenReturn(new ArrayList<>(pets));
 
         ArgumentCaptor<DisplayPetsOutputData> captor = ArgumentCaptor.forClass(DisplayPetsOutputData.class);
 

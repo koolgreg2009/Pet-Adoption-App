@@ -45,29 +45,30 @@ public class FileUserDAOTest {
      * @throws IOException if an I/O error occurs during setup.
      */
     @BeforeEach
-//    public void setUp() throws IOException {
-//        int petID1 = 77;
-//        petID2= 13;
-//        LocalDateTime time1 = LocalDateTime.of(2024, 03, 31, 14, 12);
-//        LocalDateTime time2 = LocalDateTime.of(2024, 7, 12, 8, 01);
-//        Bookmark bookmark1 = new Bookmark(petID1, time1);
-//        Bookmark bookmark2 = new Bookmark(petID2, time2);
-//        allBookmarks = new ArrayList<>();
-//        allBookmarks.add(bookmark1);
-//        allBookmarks.add(bookmark2);
-//        jsonFile = new File("test_users.json");
-//        objectMapper = mock(ObjectMapper.class);
-//        objectMapper.registerModule(new JavaTimeModule());
-//        fileUserDAO = new FileUserDAO("test_users.json");
-//        mockUser1 = new AdopterUser("lollipop123", "142456", "Sam Fries",
-//                "samfries@live.com", "1234567890");
-//        mockUser2 = new AdopterUser("bobthebuilder", "6872647ok", "Jimmy Wang",
-//                "jimw@telus.net", "3451238980");
-//        mockUserWithBookmark = new AdopterUser("baerizz", "love15in", "Anna Holts",
-//                "annabanana@yahoo.com", "5205205205", allBookmarks, null);
-//
-//        objectMapper.writeValue(jsonFile, new ArrayList<>());
-//    }
+    public void setUp() throws IOException {
+        int petID1 = 77;
+        petID2= 13;
+        LocalDateTime time1 = LocalDateTime.of(2024, 03, 31, 14, 12);
+        LocalDateTime time2 = LocalDateTime.of(2024, 7, 12, 8, 01);
+        Bookmark bookmark1 = new Bookmark("test-user", petID1, time1);
+        Bookmark bookmark2 = new Bookmark("test-user", petID2, time2);
+        allBookmarks = new ArrayList<>();
+        allBookmarks.add(bookmark1);
+        allBookmarks.add(bookmark2);
+        jsonFile = new File("test_users.json");
+        objectMapper = mock(ObjectMapper.class);
+        objectMapper.registerModule(new JavaTimeModule());
+        fileUserDAO = new FileUserDAO("test_users.json");
+        mockUser1 = new AdopterUser("lollipop123", "142456", "Sam Fries",
+                "samfries@live.com", "1234567890");
+        mockUser2 = new AdopterUser("bobthebuilder", "6872647ok", "Jimmy Wang",
+                "jimw@telus.net", "3451238980");
+        mockUserWithBookmark = new AdopterUser("baerizz", "love15in", "Anna Holts",
+                "annabanana@yahoo.com", "5205205205", allBookmarks, null);
+
+        objectMapper.writeValue(jsonFile, new ArrayList<>());
+    }
+
 
     /**
      * Cleans up the test environment after each test is run.

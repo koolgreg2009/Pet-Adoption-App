@@ -34,6 +34,12 @@ public class AdoptPresenter implements AdoptOutputBoundary {
      * @param adoptOutputData the data related to the adopted pet, including ID, owner, email, and phone
      */
     @Override
+    public void prepareFailure(String message) {
+        loggedInViewModel.setNotification(message, true);
+        displayPetsViewModel.firePropertyChanged();
+    }
+
+    @Override
     public void prepareAdopt(AdoptOutputData adoptOutputData) {
         loggedInViewModel.setNotification("Thank you " + SessionManager.getInstance().getCurrentUser() + " for adopting "
                 + adoptOutputData.getID() + "\n" + "You may contact the owner " + adoptOutputData.getPetOwner()

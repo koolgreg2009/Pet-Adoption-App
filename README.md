@@ -33,13 +33,41 @@ bookmark page, where they can view bookmarked pets as pet listings.
 * This project strictly adheres to the Clean Architecture and SOLID design principles.
 
 ## Getting Started
-1. Clone the repository to your local machine.
-2. You will need an IDE for Java (IntelliJ IDEA is recommended).
-3. Initialize the database by emptying `users.json` and `pets.json`, locally. (Optional)
-4. Run the project by running the `main` method in `Main.java`.
-5. Begin by creating an account. You can do this by clicking `Sign Up`. Or, if you would like to skip user creation, you can log in using the default account. `username: johndoe` `password: apple123`
-6. After filling in your information, you will be prompted to fill out your preferences for pets. You may skip this part by pressing `Save Preferences` without filling information in.
-7. Now, the program will display the list of available pets, and you may adopt, or bookmark listed pets, as desired.
+
+Requires **JDK 17** and **Maven 3.9+**. The SQL code uses Java text blocks; the build consistently targets release 17.
+
+From the repository root:
+
+```sh
+mvn clean verify
+mvn exec:java
+```
+
+The app uses **SQLite** (`data.db` in the current working directory). Existing JSON files are preserved and are not automatically imported into SQLite. A fresh database has no default account or pets: sign up, then save blank preferences to browse everything. Do not empty or delete existing JSON files or databases to initialize the app; tables are created automatically.
+
+Use an isolated directory for manual testing, and reuse the same directory when checking restart persistence:
+
+```sh
+mvn -Dpetadoption.dataDir=/tmp/pet-adoption-manual exec:java
+```
+
+Startup uses cached data and does not require an API or network connection. To import remote listings, configure `RESCUEGROUPS_API_KEY` in your environment, then run:
+
+```sh
+mvn -Dpetadoption.dataDir=/tmp/pet-adoption-manual exec:java -Dexec.args="--refresh-pets"
+```
+
+The explicit import runs before the window opens and can take time because each pet's shelter details are fetched separately. Requests have timeouts; an import failure reports an error in the launch console and leaves cached data available. Repeated imports use RescueGroups IDs and skip existing pets, preserving local adoption status. Legacy listings stored with generated IDs are not migrated by this pass.
+
+TheCatAPI breed lookup uses optional `THECATAPI_API_KEY` from the environment. No credentials are stored in source. Failed lookups show a connection/configuration hint; pet images have a fallback. Breed and image requests run in background workers.
+
+On this Mac, Maven is bundled with IntelliJ but is not on PATH. Use this executable in place of `mvn` if needed:
+
+```sh
+"/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin/mvn" clean verify
+```
+
+JUnit 5 runs through the pinned Surefire plugin, fails if no tests are found, and writes reports to `target/surefire-reports`. Tests use fixtures and temporary databases/files, without requiring live API credentials. Older relative-file tests run inside `target`, away from application data.
 
 ## APIs Used
 * [RescueGroups.org](https://rescuegroups.org/services/adoptable-pet-data-api/): API that provides us adoptable pet data.
@@ -50,7 +78,7 @@ bookmark page, where they can view bookmarked pets as pet listings.
   * Files
   * SQLite
 * Respective DAO runs SQL queries to read and write entity information
-* To swap between the implementations, simply uncomment and comment out the respective initialization codes in [Main.java](src/app/Main.java)
+* `Main.java` currently wires SQLite. JSON DAOs remain available for alternate wiring; switching storage requires code changes and does not migrate existing data. `FilePetDAO` starts empty offline; call `fetchAndStorePets()` explicitly to import.
 
 ### Files
 * Stores entities in json form using DAO's with File prefix in users.json, pets.json, and data.json
@@ -72,3 +100,17 @@ N/A (Feel free to fill it out or check currently ongoing issues)
 * [UML Diagram](https://lucid.app/lucidchart/5fb0ce87-45b4-4f2e-9527-57cff33bf035/edit?viewport_loc=1226%2C-948%2C4386%2C2030%2C0_0&invitationId=inv_282f4d82-22a6-4b58-b2ca-4a74da2ebeb9)
 * [Flow Chart](https://lucid.app/lucidchart/d2f8b40e-59de-49e9-9eeb-e733e1e2a166/edit?invitationId=inv_4ff0dbca-a473-4dc7-8d1f-96b53d3bb54a&page=0_0#)
 * [Professor Paul Gries's CA Example](https://github.com/paulgries/LoginCleanArchitecture) (Our program is inspired by Paul Gries's user/password manager program example. Thank you!)
+
+## First-pass reliability checks and limits
+
+Automated regressions cover JSON/SQLite reopen persistence, preferences, bookmarks, adoption notifications, first-login browsing, repeat imports, malformed import data, and age validation. Existing use-case tests cover signup/login and the other workflows.
+
+Manual checks (use the isolated directory above):
+
+1. Launch without credentials or network; sign up and save empty preferences. Confirm the empty state and resize the window.
+2. Import pets with your own RescueGroups credential. Log in, filter by breed/location/age, clear filters, bookmark twice, remove a bookmark, and open pet details.
+3. Open breed information and images with the network unavailable; confirm the window stays responsive and reports failure or a fallback.
+4. Bookmark a pet in two accounts, adopt it from one account, and verify it disappears from available listings/bookmarks and generates one notification for each account that bookmarked it.
+5. Close and relaunch using the same data directory. Verify login, preferences, bookmarks, adoption status, and notifications persist.
+
+Remaining work: local database operations still run on the EDT; larger datasets or locked databases may pause the UI. Adoption spans multiple writes without a shared transaction, so interrupted writes may leave partial state. Preference forms still need hydration from saved account settings on navigation, and broader layout/accessibility testing remains. Passwords are stored in plaintext as in the original course project. Previously committed API credentials should be rotated by their owners. Live API success paths require manual verification with valid credentials.

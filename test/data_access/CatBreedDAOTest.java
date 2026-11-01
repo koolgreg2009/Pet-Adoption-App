@@ -139,4 +139,31 @@ class CatBreedDAOTest {
 		verify(mockClient).newCall(any(Request.class));
 		verify(mockCall).execute();
 	}
+
+    private void reply(String json) throws IOException {
+        Response response = new Response.Builder().request(new Request.Builder().url("https://example.org").build())
+                .code(200).protocol(Protocol.HTTP_1_1).message("OK")
+                .body(ResponseBody.create(MediaType.parse("application/json"), json)).build();
+        when(mockClient.newCall(any(Request.class))).thenReturn(mockCall);
+        when(mockCall.execute()).thenReturn(response);
+    }
+
+    @Test void missingOptionalImageDoesNotDiscardBreed() throws IOException {
+        reply("[{\"name\":\"Siamese\",\"description\":\"Friendly\",\"adaptability\":5,"
+                + "\"affection_level\":5,\"child_friendly\":4,\"dog_friendly\":4,\"energy_level\":5}]");
+        assertEquals("", catBreedDAO.getBreedInformation("Siamese").get("image_url"));
+    }
+
+    @Test void malformedResponseReturnsFailure() throws IOException {
+        reply("not JSON");
+        assertEquals(null, catBreedDAO.getBreedInformation("Siamese"));
+    }
+
+    @Test void queryEncodesBreedAsOneParameter() throws IOException {
+        reply("[]");
+        catBreedDAO.getBreedInformation("A & B");
+        org.mockito.ArgumentCaptor<Request> request = org.mockito.ArgumentCaptor.forClass(Request.class);
+        verify(mockClient).newCall(request.capture());
+        assertEquals("A & B", request.getValue().url().queryParameter("q"));
+    }
 }

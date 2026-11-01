@@ -37,7 +37,7 @@ class GetNotifInteractorTest {
     @Test
     void testExecuteNoNotifications() {
         AdopterUser user = new AdopterUser("user1", "password", "User One", "email1@example.com", "123");
-        when(userDAO.get("user1")).thenReturn(user);
+        when(userDAO.getNotifications("user1")).thenReturn(user.getNotifications());
 
         GetNotifInputData inputData = new GetNotifInputData("user1");
         interactor.execute(inputData);
@@ -59,7 +59,7 @@ class GetNotifInteractorTest {
         user.addNotif("Notification 1");
         user.addNotif("Notification 2");
 
-        when(userDAO.get("user1")).thenReturn(user);
+        when(userDAO.getNotifications("user1")).thenReturn(user.getNotifications());
 
         GetNotifInputData inputData = new GetNotifInputData("user1");
         interactor.execute(inputData);

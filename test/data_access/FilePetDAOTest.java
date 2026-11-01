@@ -53,7 +53,7 @@ class FilePetDAOTest {
         petDAO.save(pet1);
         petDAO.save(pet2);
 
-        UserPreference userPreference = new UserPreference("Dog", null, 0, 5, null, null, null);
+        UserPreference userPreference = new UserPreference("user1", "Dog", null, 0, 5, null, null, null);
 
         ArrayList<Pet> matchingPets = petDAO.getPreferencePets(userPreference);
         assertEquals(1, matchingPets.size());
@@ -69,7 +69,7 @@ class FilePetDAOTest {
         petDAO.save(pet1);
         petDAO.save(pet2);
 
-        UserPreference userPreference = new UserPreference("Dog", null, 0, 5, null, "New York", "Female");
+        UserPreference userPreference = new UserPreference("user1", "Dog", null, 0, 5, null, "New York", "Female");
 
         ArrayList<Pet> matchingPets = petDAO.getPreferencePets(userPreference);
         assertEquals(1, matchingPets.size());

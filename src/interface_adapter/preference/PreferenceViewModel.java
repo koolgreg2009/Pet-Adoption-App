@@ -144,6 +144,10 @@ public class PreferenceViewModel extends ViewModel {
      * @return True if all fields are valid, false otherwise.
      */
     public boolean validatePreferences() {
+        state.setMinAge(state.getMinAge().trim());
+        state.setMaxAge(state.getMaxAge().trim());
+        state.setMinAgeError("");
+        state.setMaxAgeError("");
         boolean isValid = true;
         if (!validateMinAge()) {
             isValid = false;
@@ -198,7 +202,7 @@ public class PreferenceViewModel extends ViewModel {
                     return false;
                 } else if (!state.getMinAge().isEmpty()) {
                     int minAge = Integer.parseInt(state.getMinAge());
-                    if (maxAge < minAge) {
+                    if (maxAge != 0 && maxAge < minAge) {
                         state.setMaxAgeError("Maximum age cannot be less than minimum age");
                         return false;
                     }

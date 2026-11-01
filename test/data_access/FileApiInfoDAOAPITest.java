@@ -27,14 +27,16 @@ class FileApiInfoDAOAPITest {
      */
     @BeforeEach
     void setUp() throws IOException {
-        tempFile = new File("data.json");
-
-        // Ensure the file is treated as empty during testing
-        if (tempFile.exists()) {
-            tempFile.delete();
-        }
-
-        fileApiInfoDAO = new FileApiInfoDAO(tempFile.getAbsolutePath());
+        tempFile = File.createTempFile("pet-api-info-", ".json");
+        fileApiInfoDAO = new FileApiInfoDAO(tempFile.getAbsolutePath()) {
+            @Override
+            protected String makeAPICall(String endpoint) {
+                if (endpoint.contains("breeds")) {
+                    return "{\"data\":[{\"attributes\":{\"name\":\"Siamese\"}}]}";
+                }
+                return "{\"included\":[{\"type\":\"locations\",\"attributes\":{\"citystate\":\"Toronto, ON\"}}]}";
+            }
+        };
     }
 
     /**

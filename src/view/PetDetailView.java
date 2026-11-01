@@ -46,6 +46,7 @@ public class PetDetailView extends JPanel implements PropertyChangeListener {
     private JScrollPane bioScrollPane;
 
     private String viewUser;
+    private int imageRequest;
 
     /**
      * Constructs a {@code PetDetailView} with the specified {@code PetBioViewModel}, {@code DisplayPetsController}, and {@code GetBreedController}.
@@ -276,7 +277,7 @@ public class PetDetailView extends JPanel implements PropertyChangeListener {
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getNewValue() instanceof PetBioState) {
+        if ("state".equals(evt.getPropertyName()) && evt.getNewValue() instanceof PetBioState) {
             PetBioState state = (PetBioState) evt.getNewValue();
             this.viewUser = state.getViewUser();
             PetDTO pet = state.getPet();
@@ -290,34 +291,35 @@ public class PetDetailView extends JPanel implements PropertyChangeListener {
             phoneNumText.setText(pet.getPhoneNum());
             activityLevelText.setText(pet.getActivityLevel());
 
-            try {
-                imageLabel.setText("");
-                imageLabel.setIcon(null);
-                URL url = new URL(pet.getImgUrl());
-                ImageIcon imageIcon = new ImageIcon(url);
-                Image image = imageIcon.getImage();
-                int originalWidth = image.getWidth(null);
-                int originalHeight = image.getHeight(null);
-
-                int labelWidth = imageLabel.getWidth();
-                int labelHeight = imageLabel.getHeight();
-
-                double widthRatio = (double) labelWidth / originalWidth;
-                double heightRatio = (double) labelHeight / originalHeight;
-                double scalingFactor = Math.min(widthRatio, heightRatio);
-
-                int newWidth = (int) (originalWidth * scalingFactor);
-                int newHeight = (int) (originalHeight * scalingFactor);
-
-                Image scaledImage = image.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-                imageIcon = new ImageIcon(scaledImage);
-
-                imageLabel.setIcon(imageIcon);
-                imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                imageLabel.setVerticalAlignment(SwingConstants.CENTER);
-            } catch (Exception e) {
-                imageLabel.setText("Image not available");
-            }
+            final int request = ++imageRequest;
+            imageLabel.setText("Loading image...");
+            imageLabel.setIcon(null);
+            new SwingWorker<ImageIcon, Void>() {
+                @Override protected ImageIcon doInBackground() throws Exception {
+                    if (pet.getImgUrl() == null || pet.getImgUrl().isBlank()) return null;
+                    java.net.URLConnection connection = new URL(pet.getImgUrl()).openConnection();
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(5000);
+                    try (java.io.InputStream input = connection.getInputStream()) {
+                        java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(input);
+                        return image == null ? null : new ImageIcon(image);
+                    }
+                }
+                @Override protected void done() {
+                    if (request != imageRequest) return;
+                    try {
+                        ImageIcon icon = get();
+                        if (icon == null) throw new IllegalStateException();
+                        double ratio = Math.min(400.0 / icon.getIconWidth(), 300.0 / icon.getIconHeight());
+                        imageLabel.setIcon(new ImageIcon(icon.getImage().getScaledInstance(
+                                Math.max(1, (int) (icon.getIconWidth() * ratio)),
+                                Math.max(1, (int) (icon.getIconHeight() * ratio)), Image.SCALE_SMOOTH)));
+                        imageLabel.setText("");
+                    } catch (Exception e) {
+                        imageLabel.setText("Image not available");
+                    }
+                }
+            }.execute();
         }
 
         if ("notification".equals(evt.getPropertyName())){

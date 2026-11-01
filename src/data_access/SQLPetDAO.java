@@ -15,13 +15,7 @@ public class SQLPetDAO extends RescueAPIPetGet implements PetDAOInterface{
 
     public SQLPetDAO(Connection conn){
         this.conn = conn;
-        try{
-            if (isPetTableEmpty()){
-                fetchAndStorePets();
-            }
-        }catch(Exception e){
-            throw new RuntimeException(e);
-        }
+
     }
 
     /**
@@ -112,11 +106,21 @@ public class SQLPetDAO extends RescueAPIPetGet implements PetDAOInterface{
     }
 
     /**
-     * Just a filler so compiler doesn't get mad. This was refactored to SQLUserDAO
+     * Filter pets directly for callers that already have a preference object.
      */
     @Override
     public ArrayList<Pet> getPreferencePets(UserPreference userPreference) {
-        return null;
+        ArrayList<Pet> pets = new ArrayList<>();
+        try (Statement statement = conn.createStatement();
+             ResultSet rows = statement.executeQuery("SELECT pet_id FROM pets WHERE is_available = 1")) {
+            while (rows.next()) {
+                Pet pet = get(rows.getInt(1));
+                if (FilePetDAO.matchesPreference(pet, userPreference)) pets.add(pet);
+            }
+            return pets;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to filter pets", e);
+        }
     }
 
     /**

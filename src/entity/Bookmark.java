@@ -24,7 +24,7 @@ public class Bookmark {
 	 * @param time the date and time when the bookmark was created
 	 */
 	@JsonCreator()
-	public Bookmark(String username, @JsonProperty("petID") int petID, @JsonProperty("time") LocalDateTime time) {
+	public Bookmark(@JsonProperty("username") String username, @JsonProperty("petID") int petID, @JsonProperty("bookmarkedDate") @com.fasterxml.jackson.annotation.JsonAlias("time") LocalDateTime time) {
 		this.username = username;
 		this.petID = petID;
 		this.bookmarkedDate = time;

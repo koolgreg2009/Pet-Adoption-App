@@ -2,7 +2,6 @@ package data_access;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import entity.Pet;
-import utils.IdCounter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,12 +25,15 @@ public abstract class RescueAPIPetGet extends RescueAPIBase {
     public void fetchAndStorePets() throws IOException {
         String response = makeAPICall("/public/animals/search/available/cats?limit=100");
         JsonNode root = objectMapper.readTree(response);
-        JsonNode data = root.get("data");
-        JsonNode included = root.get("included");
+        if (root == null) throw new IOException("RescueGroups returned an empty response.");
+        JsonNode data = root.path("data");
+        if (!data.isArray()) throw new IOException("RescueGroups returned invalid pet data.");
+        JsonNode included = root.path("included");
         Map<String, String> locationMap = parseLocations(included);
         for (JsonNode petNode : data) {
             Pet pet = parsePet(petNode, locationMap);
-            if (pet != null) {
+            if (pet != null && (!(this instanceof PetDAOInterface) ||
+                    ((PetDAOInterface) this).get(pet.getPetID()) == null)) {
                 save(pet);
             }
         }
@@ -66,19 +68,22 @@ public abstract class RescueAPIPetGet extends RescueAPIBase {
      * @throws IOException if an I/O error occurs during the parsing.
      */
     private Pet parsePet(JsonNode petNode, Map<String, String> locationMap) throws IOException {
-        String locationId = petNode.path("relationships").path("locations").path("data").get(0).path("id").asText();
-        String location = locationMap.get(locationId).isEmpty() ? "N/A" : locationMap.get(locationId);
-        String orgId = petNode.get("relationships").get("orgs").get("data").get(0).get("id").asText();
+        if (!petNode.path("attributes").isObject() || petNode.path("id").asInt(-1) <= 0) {
+            throw new IOException("RescueGroups returned a pet without valid attributes or ID.");
+        }
+        String locationId = petNode.path("relationships").path("locations").path("data").path(0).path("id").asText();
+        String location = locationMap.getOrDefault(locationId, "N/A");
+        String orgId = petNode.path("relationships").path("orgs").path("data").path(0).path("id").asText();
+        if (orgId.isBlank()) return null;
         String orgUrl = "/public/orgs/" + orgId;
         String orgResponseBody = makeAPICall(orgUrl);
         JsonNode orgRoot = objectMapper.readTree(orgResponseBody);
-        JsonNode dataNode = orgRoot.get("data");
-        JsonNode orgData = dataNode.get(0).get("attributes");
-        String owner = orgData.get("name").asText();
+        JsonNode orgData = orgRoot.path("data").path(0).path("attributes");
+        String owner = orgData.path("name").asText("N/A");
         String email = orgData.has("email") ? orgData.get("email").asText().replaceAll("\\s+", "") : "N/A";
         String phoneNum = orgData.has("phone") ? orgData.get("phone").asText().replaceAll("\\s+", "") : "N/A";
         int age = petNode.get("attributes").has("ageString") ? parseAgeString(petNode.get("attributes").get("ageString").asText()) : 0;
-        String breed = petNode.get("attributes").get("breedPrimary").asText();
+        String breed = petNode.path("attributes").path("breedPrimary").asText("N/A");
         String desc =  petNode.get("attributes").has("descriptionText") ? removeHTML(petNode.get("attributes").get("descriptionText").asText()) : "N/A";
         String activityLevel = petNode.get("attributes").has("activityLevel")
                 ? petNode.get("attributes").get("activityLevel").asText()
@@ -89,12 +94,11 @@ public abstract class RescueAPIPetGet extends RescueAPIBase {
             name = petNode.get("attributes").get("name").asText();
         }
         String imgUrl = petNode.get("attributes").has("pictureThumbnailUrl") ? petNode.get("attributes").get("pictureThumbnailUrl").asText() : "";
-        String parsedUrl = imgUrl.split("\\?")[0];
         return new Pet(
                 owner,
                 email,
                 phoneNum,
-                IdCounter.getNextID(),
+                petNode.path("id").asInt(),
                 "Cat",
                 age,
                 breed,
@@ -104,21 +108,23 @@ public abstract class RescueAPIPetGet extends RescueAPIBase {
                 location,
                 true,
                 name,
-                parsedUrl
+                imgUrl
         );
     }
 
     /**
-     * Parses a string representing age into an integer value representing months.
+     * Parses a string representing age into an integer value representing whole years.
      *
      * <p>RI: The format of the ageString must be in "x Years y Months" format.</p>
      *
      * @param ageString the string representing the age of the pet.
-     * @return the age of the pet in months.
+     * @return the age of the pet in whole years; kittens younger than one year use zero.
      */
     private int parseAgeString(String ageString) {
         String[] split =  ageString.split(" ");
-        return Integer.parseInt(split[0]);
+        try {
+            return ageString.toLowerCase().contains("year") ? Integer.parseInt(split[0]) : 0;
+        } catch (NumberFormatException e) { return 0; }
     }
 
     /**

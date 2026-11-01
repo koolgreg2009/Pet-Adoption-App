@@ -295,8 +295,8 @@ public class SQLUserDAO implements UserDAOInterface{
     public boolean userHasBookmark(String username, int petID) {
         String sql = """
                 SELECT 1
-                FROM users u
-                WHERE username = ? AND petID = ?
+                FROM bookmarks
+                WHERE username = ? AND pet_id = ?
                 """;
         try (PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1, username);
@@ -538,7 +538,7 @@ public class SQLUserDAO implements UserDAOInterface{
             pstmt.setString(2, message);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Could not access notifications", e);
         }
     }
 
@@ -559,7 +559,7 @@ public class SQLUserDAO implements UserDAOInterface{
                 notifications.add(message);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Could not access notifications", e);
         }
         return notifications;
     }

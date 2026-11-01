@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import entity.Pet;
+import entity.Bookmark;
 import entity.preference.UserPreference;
 import entity.user.AdopterUser;
 import entity.user.User;
@@ -88,7 +89,7 @@ public class FileUserDAO implements UserDAOInterface {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		try {
-			objectMapper.writeValue(jsonFile, accounts);
+			utils.AtomicJsonFile.write(objectMapper, jsonFile, accounts);
 		} catch (Exception ex) {
 			System.out.print("Failed saving file [" + jsonFile.getName() + "]: " + ex.getMessage());
 			throw new RuntimeException(ex);
@@ -141,22 +142,10 @@ public class FileUserDAO implements UserDAOInterface {
 	 * @return A string containing the names of all removed users, each followed by a newline character.
 	 */
 	@Override
-	public void clearUsers() { //
-//		try {
-//			RandomAccessFile file = new RandomAccessFile(jsonFile, "rw");
-//			file.setLength(0);
-//			file.close();
-//		} catch (IOException e) {
-//			throw new RuntimeException(e);
-//		}
-//
-//		StringBuilder empty = new StringBuilder();
-//		for (User user : accounts.values()) {
-//			empty.append(user.getName()).append("\n");
-//		}
-//		accounts.clear();
-//		return empty.toString();
-	}
+	public void clearUsers() {
+        accounts.clear();
+        save();
+    }
 
 	/**
 	 * Removes a pet from all user bookmarks and returns a list of usernames whose bookmarks were updated.
@@ -194,27 +183,33 @@ public class FileUserDAO implements UserDAOInterface {
 
 	@Override
 	public void updatePreferences(String username, UserPreference preference) {
-
+        accounts.get(username).setPreferences(preference);
+        save();
 	}
 
 	@Override
 	public void addBookmark(String username, int petID, LocalDateTime now) {
-
+        if (!userHasBookmark(username, petID)) {
+            accounts.get(username).addBookmark(new Bookmark(username, petID, now));
+        }
+        save();
 	}
 
 	@Override
 	public void removeBookmark(String username, int petID) {
-
+        accounts.get(username).getBookmarks().removeIf(b -> b.getPetID() == petID);
+        save();
 	}
 
 	@Override
 	public void addNotification(String username, String message) {
-
+        accounts.get(username).addNotif(message);
+        save();
 	}
 
 	@Override
 	public List<String> getNotifications(String username) {
-		return List.of();
+		return new ArrayList<>(accounts.get(username).getNotifications());
 	}
 
 }

@@ -65,8 +65,8 @@ class DisplayBookmarkInteractorTest {
     @Test
     void testExecuteWithBookmarks() {
         AdopterUser user = new AdopterUser("user1", "password", "User One", "email1@example.com", "123");
-        Bookmark bookmark1 = new Bookmark(1, LocalDateTime.now());
-        Bookmark bookmark2 = new Bookmark(2, LocalDateTime.now());
+        Bookmark bookmark1 = new Bookmark("test-user", 1, LocalDateTime.now());
+        Bookmark bookmark2 = new Bookmark("test-user", 2, LocalDateTime.now());
         user.addBookmark(bookmark1);
         user.addBookmark(bookmark2);
 

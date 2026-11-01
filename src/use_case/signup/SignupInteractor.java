@@ -52,7 +52,9 @@ public class SignupInteractor implements SignupInputBoundary {
         if (isEmpty(signupInputData.getUsername(), "Username cannot be empty.") ||
                 isEmpty(signupInputData.getPassword(), "Password cannot be empty.") ||
                 isEmpty(signupInputData.getRepeatPassword(), "Repeat password cannot be empty.") ||
-                isEmpty(signupInputData.getName(), "Your name cannot be empty.")) {
+                isEmpty(signupInputData.getName(), "Your name cannot be empty.") ||
+                isEmpty(signupInputData.getEmail(), "Email cannot be empty.") ||
+                isEmpty(signupInputData.getPhone(), "Phone cannot be empty.")) {
             return;
         }
 
@@ -93,7 +95,7 @@ public class SignupInteractor implements SignupInputBoundary {
      * @return {@code true} if the field is empty, {@code false} otherwise.
      */
     private boolean isEmpty(String field, String errorMessage) {
-        if (field == null || field.isEmpty()) {
+        if (field == null || field.isBlank()) {
             userPresenter.prepareFailView(errorMessage);
             return true;
         }

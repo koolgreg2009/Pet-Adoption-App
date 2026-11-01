@@ -50,6 +50,7 @@ public class DisplayPetsInteractor implements DisplayPetsInputBoundary {
         //UserPreference pref = ((AdopterUser)user).getPreferences();
         String username = user.getUsername();
 		ArrayList<Pet> pets = userDAO.getPreferencePets(username);
+        if (pets == null) pets = petDAO.getPreferencePets(((AdopterUser) user).getPreferences());
 		List<PetDTO> petDtoList = pets == null ? new ArrayList<PetDTO>()
 				: pets.stream()
 						.map(pet -> new PetDTO(pet.getPetID(), pet.getName(), pet.getBreed(), pet.getGender(),

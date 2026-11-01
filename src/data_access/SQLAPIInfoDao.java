@@ -15,16 +15,7 @@ public class SQLAPIInfoDao extends RescueAPIBase implements APIInfoInterface{
 
     public SQLAPIInfoDao(Connection conn) throws SQLException {
         this.conn = conn;
-        try {
-            if (isTableEmpty("breeds")) {
-                getBreedInfo();
-            }
-            if (isTableEmpty("locations")) {
-                getLocation();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     /**
@@ -124,11 +115,11 @@ public class SQLAPIInfoDao extends RescueAPIBase implements APIInfoInterface{
     @Override
     public boolean exists(List<String> values, String table) {
         for (String value : values) {
-            if (exists(value, table)) {
-                return true;
+            if (!exists(value, table)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private boolean isTableEmpty(String tableName) {

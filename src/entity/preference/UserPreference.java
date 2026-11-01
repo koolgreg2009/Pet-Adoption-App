@@ -67,7 +67,7 @@ public class UserPreference{
 	 */
 	@JsonProperty("breeds")
 	public List<String> getBreeds() {
-		return this.breeds;
+		return this.breeds == null ? java.util.List.of() : this.breeds;
 	}
 
 	/** Gets the user's preferred minimum age of pet
@@ -99,7 +99,7 @@ public class UserPreference{
 	 */
 	@JsonProperty("location")
 	public String getLocation() {
-		return this.location;
+		return this.location == null ? "" : this.location;
 	}
 
 

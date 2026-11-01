@@ -57,7 +57,7 @@ public class DisplayBookmarkInteractor implements DisplayBookmarkInputBoundary {
         List<LocalDateTime> times = new ArrayList<>();
         for(Bookmark bookmark: bookmarks){
             Pet pet = filePetDAO.get(bookmark.getPetID());
-            if (pet.isAvailable()) {
+            if (pet != null && pet.isAvailable()) {
                 pets.add(filePetDAO.get(bookmark.getPetID()));
                 times.add(bookmark.getBookmarkedDate());
             }
@@ -68,7 +68,6 @@ public class DisplayBookmarkInteractor implements DisplayBookmarkInputBoundary {
                         pet.getSpecies(), pet.getPetAge(), pet.getBio(), pet.getOwner(), pet.getEmail(),
                         pet.getPhoneNum(), pet.getActivityLevel(), pet.getLocation(), pet.getImgUrl()))
                 .collect(Collectors.toList());
-        petDtoList.sort((p1, p2) -> p1.getPetID() - p2.getPetID());
         List<BookmarkDTO> bookmarkDTO = new ArrayList<>();
         for(int i=0; i<pets.size(); i++){
             bookmarkDTO.add(new BookmarkDTO(petDtoList.get(i), times.get(i)));
